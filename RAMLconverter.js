@@ -55,7 +55,7 @@ myRAMLtoPostman = function (inputPath) {
     //adding fragments from files into RAML
     function addingFragments (ramlSpec, mainPathWithoutFile){
         //finding includes
-        const regex = /!include.*/g;
+        const regex = /!include.*(.json|.raml)/g;
         const includeArray = ramlSpec.match(regex);
         console.log(includeArray);
 
@@ -124,7 +124,8 @@ myRAMLtoPostman = function (inputPath) {
                     else{
                         //not replacing 
                         console.log('others (not replacing ):',index , ramlFragment);
-                        ramlFragment = element; 
+                        const paddedNewLine = '\n'.padEnd(includeWhiteSpacesArray[index]+2,' ');
+                        ramlFragment = ramlFragment.replaceAll('\n',paddedNewLine);
                     }
                 //remove first line
                 ramlFragment = ramlFragment.replace(regexTraitsFile,'');   
@@ -144,10 +145,10 @@ myRAMLtoPostman = function (inputPath) {
     regexFirstRequest = /^\s*\/.*/gm;
     firstRequest = newRamlSpec.match(regexFirstRequest)[0];
     newRamlSpec = newRamlSpec.replace(firstRequest,fakeRequest + firstRequest);
-    /*fs.writeFile('newRamlSpec.RAML',newRamlSpec,(err) => {
+    fs.writeFile('newRamlSpec.RAML',newRamlSpec,(err) => {
         if (err) { console.log(err); }
         console.log('newRamlSpec saved');
-    });*/
+    });
 
     function replaceObjectValue(obj){
         for(const key of Object.keys(obj)){
