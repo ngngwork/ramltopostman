@@ -68,7 +68,8 @@ myRAMLtoPostman = function (inputPath) {
 
     //'is' conversion workaround
     function calculateStartWhiteSpaces(index, lineArray, before){
-        //give me the line, index and the array calculate the next non empty line start white spaces
+        //give the line, index and the array calculate the next non empty line start white spaces
+        console.log('Calculating White Space of the next non empty line', index, lineArray[index]);
         let direction;
         if(before){
             direction = -1;
@@ -78,15 +79,12 @@ myRAMLtoPostman = function (inputPath) {
         let lineFollowingWhiteSpace = 0;
         let lineFollowing = '';
         for (let i = 0; (lineArray[index+direction*i] != undefined && !(lineArray[index+direction*i].trim())) || i == 0; i++) {
-            console.log('lineArray[index+direction*i] is: ', index+direction*i,lineArray[index+direction*i]);
             if(lineArray[index+direction*(i+1)] != undefined && lineArray[index+direction*(i+1)].trim()){
                 lineFollowing = lineArray[index+direction*(i+1)];
                 
             }
         }
         lineFollowingWhiteSpace = lineFollowing.length - lineFollowing.trimStart().length;
-        console.log('lineFollowingWhiteSpace is: ', lineFollowingWhiteSpace);
-        console.log('lineFollowing is: ', lineFollowing);
         return {lineFollowing, lineFollowingWhiteSpace};
     }
 
@@ -100,9 +98,7 @@ myRAMLtoPostman = function (inputPath) {
             restCode = '201';
         }
         console.log('new call lineArray[i]',i , lineArray[i]);
-        //let lineWhiteSpace = lineArray[i].length - lineArray[i].trimStart().length;
-        //let lineAfterWhiteSpace = lineWhiteSpace;
-        //console.log('lineAfterWhiteSpace is: ', lineAfterWhiteSpace,lineAfterWhiteSpace > lineWhiteSpace);
+        
         let numberOfSpaces = lineArray[index].length - lineArray[index].trimStart().length;
         let inputAfterString = 
                         'body:' + '\n'.padEnd(numberOfSpaces+2,' ') 
@@ -114,12 +110,9 @@ myRAMLtoPostman = function (inputPath) {
                             && !lineArray[i].includes('delete:')
                                 && (!lineArray[i-1].includes(']'))){
             let convertedLine = '';
-            let lineArrayLowerCase = lineArray[i].toLowerCase();
-            //lineAfterWhiteSpace = calculateStartWhiteSpaces(i, lineArray,false).lineFollowingWhiteSpace;
-             
+            let lineArrayLowerCase = lineArray[i].toLowerCase(); 
                                         
             if((/is\s*:\s*\[.*/g).test(lineArray[i])){
-                //console.log('numberOfSpaces',numberOfSpaces);
                 if(method == 'post' || method == 'put'){
                     convertedString = inputAfterString + 'inputexample:' + '\n'.padEnd(numberOfSpaces+1,' ');;
                 }
@@ -128,7 +121,6 @@ myRAMLtoPostman = function (inputPath) {
                         + 'body:' + '\n'.padEnd(numberOfSpaces+4,' ') 
                         + 'application/json:' + '\n'.padEnd(numberOfSpaces+5,' ') 
                         + 'example:' + '\n'.padEnd(numberOfSpaces+6,' ') 
-                //console.log('convertedString\n',convertedString);
                 convertedLine = lineArray[i].replace(/is\s*:\s*\[.*/g,convertedString);
                 
             }else if(lineArrayLowerCase.includes('example') 
@@ -237,7 +229,6 @@ myRAMLtoPostman = function (inputPath) {
         if(libWholeLine!= null){
             includeArrayWholeLine = includeArrayWholeLine.concat(libWholeLine);
         }
-        //console.log('includeArrayWholeLine',includeArrayWholeLine);
         //calculate white spaces
         var includeWhiteSpacesArray = [];
         includeArrayWholeLine.forEach(includeWholeLineElement => includeWhiteSpacesArray.push(includeWholeLineElement.length - includeWholeLineElement.trimStart().length));
@@ -250,11 +241,8 @@ myRAMLtoPostman = function (inputPath) {
                     includePathElement = includePathElement.match(/!include.*/gm)[0];
                 }else{
                     var libvar = includePathElement.replace(/(^.*):(.*)/gm,'$1');
-                    //console.log('libvar ',libvar);
                     includePathElement = includePathElement.replace(/(^.*):(.*)/gm,'$2');
-                    //console.log('includePathElement after regex',includePathElement);
                     mainRamlSpec = mainRamlSpec.replaceAll(/uses:/g,'');
-                    //console.log('mainRamlSpec',mainRamlSpec);
                 }
                 includePathElement = includePathElement.trim();
                 var includeFileRelPath = includePathElement.replace('!include', '');
@@ -262,19 +250,15 @@ myRAMLtoPostman = function (inputPath) {
                 var includeFileFullPath = mainPathWithoutFile.concat(includeFileRelPath).replaceAll(' ','');
                 
                 if (fs.existsSync(includeFileFullPath)) {
-                    //console.log('Path exists', includeFileFullPath);
                     ramlFragment = fs.readFileSync(includeFileFullPath, {encoding: 'UTF8'});
                 }
                 //Path is wrong, shouldn't happen
                 else{
-                    //console.log('ERROR: Path of fragments doesnt not exist: ', includeFileFullPath);
-                    //includeFileFullPath = '/Users/work/Desktop/Mainova/RAMLtoPostman/TAP/tap/flex/exchange_modules/709ee967-a9aa-437d-93ae-647a4e9e30d1/tap-common-assets-library/1.0.32/libraries/response-library.raml'
                     ramlFragment = '';
                 }
                 
                 //check if fragments have include 
                 if(ramlFragment.includes('!include')){
-                    //console.log('includeRelPathWithoutFile',includeRelPathWithoutFile);
                     ramlFragment = ramlFragment.replaceAll(/!include (\w)/gm,'!include ' + includeRelPathWithoutFile + '$1');
                     ramlFragment = ramlFragment.replaceAll(/!include \//gm,'!include ' + includeRelPathWithoutFile);
                     
@@ -338,7 +322,6 @@ myRAMLtoPostman = function (inputPath) {
                 //console.log('Ending includePathElement: ',includePathElement); 
                 mainRamlSpec = mainRamlSpec.replace(includePathElement,ramlFragment);
             });
-        //console.log('MainRamlSpec: \n',mainRamlSpec);
         return mainRamlSpec;
     }
 
@@ -384,7 +367,6 @@ myRAMLtoPostman = function (inputPath) {
     };
 
     //convert raml to postman collection
-    //console.log('newRamlSpec', newRamlSpec);
     Converter.convert({ type: 'string', data: newRamlSpec, options:
         {
             collapseFolders: true,
