@@ -40,9 +40,9 @@ myRAMLtoPostman = function (inputPath) {
     fullPath = fromDir(inputPath, '.raml');
     console.log('Extracting full path: ', fullPath);
 
-    const regexFileName = /\/(?:.(?!\/))+$/gm;
+    const regexFileName = /\\(?:.(?!\\))+$/gm;
 
-    const fileName = fullPath.match(regexFileName)[0].replace('/','');
+    const fileName = fullPath.match(regexFileName)[0].replace('\\','');
     console.log('Extracting fileName: ',fileName);
 
     const mainPathWithoutFile = fullPath.replace(fileName,'');
@@ -248,6 +248,7 @@ myRAMLtoPostman = function (inputPath) {
                 var includeFileFullPath = mainPathWithoutFile.concat(includeFileRelPath).replaceAll(' ','');
                 
                 if (fs.existsSync(includeFileFullPath)) {
+                    includeFileFullPath = includeFileFullPath.replaceAll('/','\\');
                     ramlFragment = fs.readFileSync(includeFileFullPath, {encoding: 'UTF8'});
                 }
                 //Path is wrong, shouldn't happen
@@ -275,11 +276,9 @@ myRAMLtoPostman = function (inputPath) {
                     const fragmentsTwoDotRegex = /\s(\.\.*\/)/gm;
                     ramlFragment = ramlFragment.replaceAll(fragmentsTwoDotRegex,' ' + includeRelPathWithoutFileParent);
                 }
-                //console.log('ramlFragment',ramlFragment);
                 //Replacing includes with content       
                 if(includePathElement.includes('type')|| ramlFragment.includes('#%RAML 1.0 DataType')){
                     //manipulate white space 
-                    //console.log('Replacing DataType')
                     const paddedNewLine = '\n'.padEnd(includeWhiteSpacesArray[index]+2,' ');
                     ramlFragment = ramlFragment.replaceAll('\n',paddedNewLine);
                     const regex2 = /(properties.*)/s;
@@ -289,7 +288,6 @@ myRAMLtoPostman = function (inputPath) {
                 }
                 //FIXME: a lot of space
                 else if(includePathElement.includes('example')|| includePathElement.includes('.json')|| ramlFragment.includes('#%RAML 1.0 NamedExample')){
-                    //console.log('Replacing examples')
                     const paddedNewLine = '\n'.padEnd(includeWhiteSpacesArray[index]+2,' ');
                     ramlFragment = ramlFragment.replaceAll('\n',paddedNewLine);
                     ramlFragment = paddedNewLine + ramlFragment;
